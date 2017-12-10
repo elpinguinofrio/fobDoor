@@ -8,14 +8,9 @@ fp = open('/dev/hidraw0', 'rb')
 
 code = []
 
-def play(number):
-    print("play " + str(number))
-    if number == 1:
-        pygame.mixer.music.load("access_granted.wav")
-    if number == 0:
-        pygame.mixer.music.load("access_denied2.wav") 
-    if number == 2:
-       pygame.mixer.music.load("el_pinguino_granted.mp3")
+def play(soundFileName):
+    print("play " + soundFileName)
+    pygame.mixer.music.load("soundFileName")
     pygame.mixer.music.set_volume(1.0)
     pygame.mixer.music.play()
     while pygame.mixer.music.get_busy() == True:
@@ -29,10 +24,14 @@ while True:
     if len(code) == 11:
         print(code)
         if code == [39, 39, 39, 35, 34, 33, 30, 36, 31, 37, 40]:
-            play(1)
+            play("access_granted.wav")
         elif code == [39, 39, 30, 32, 32, 32, 39, 31, 32, 31, 40]:
-            play(2)
+            play("el_pinguino_granted.mp3")
+        elif code == [39, 39, 39, 36, 38, 32, 37, 38, 33, 33, 40]:
+            play("jared_villian.mp3")
+        elif code == [39, 39, 39, 35, 34, 33, 30, 36, 31, 37, 40]:
+            play("test.mp3")
         else:
-            play(0)
+            play("access_denied2.wav")
         code = []
 
