@@ -52,17 +52,23 @@ def check_can_the_user_get_in(user_code):
         name = DEFAULT_USER_NAME
     now = datetime.datetime.now()
 
-    print(str(now))
+    #print(str(now))
     print(str(duedate))
 
     door_access = duedate.replace(tzinfo=None) >= now.replace(tzinfo=None)
+    if door_access:
+        say_text("Access granted, " + name)
+    else:
+        say_text("Access denied, " + name)
+
+    '''
     generate_sound_by_text(name)
     if door_access:
         play_sound("access_granted.wav")
     else:
         play_sound("access_denied2.wav")
     play_sound(TEMP_FILE)
-
+    '''
 
 # usb fob reader
 fp = open('/dev/hidraw0', 'rb')
