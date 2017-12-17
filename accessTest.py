@@ -10,7 +10,7 @@ code = []
 
 def play(soundFileName):
     print("play " + soundFileName)
-    pygame.mixer.music.load("soundFileName")
+    pygame.mixer.music.load(soundFileName)
     pygame.mixer.music.set_volume(1.0)
     pygame.mixer.music.play()
     while pygame.mixer.music.get_busy() == True:
