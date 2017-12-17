@@ -27,4 +27,6 @@ if __name__ == "__main__":
 
             # todo something when you read the fob
             print(fobNumber)
+            
+            # clear
             code = []

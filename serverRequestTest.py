@@ -4,26 +4,36 @@ import json
 import datetime
 from dateutil.parser import parse
 
+DEFAULT_USER_NAME = "Fucker"
 
-def read_user_info(code):
-    url = "http://192.168.0.110:8003/state/members/" + str(code)
-    obj = {}
-    try:
-        raw_json = urllib.request.urlopen(url).read().decode('utf8')
-        obj = json.loads(raw_json)
-    except:
-        pass
+def get_user_info(user_code):
+    raw_json = urllib.request.urlopen("http://192.168.0.110:8003/state/members/" + str(user_code)).read().decode('utf8')
+    obj = json.loads(raw_json)
     return obj
 
 def user_get_duedate(user_info):
-    raw_date = user_info['membershipDue']
-    date = parse(raw_date)
-    return date
+    return parse(user_info['membershipDue'])
+    
+def user_get_name(user_info):
+    return user_info['name']
 
-duedate = user_get_duedate(read_user_info("0007978161"))
-now = datetime.datetime.now()
+def check_can_the_user_get_in(user_code):
+    try:
+        # try to read date from DB
+        user_info = get_user_info(user_code)
+        print(user_info)
+        duedate = user_get_duedate(user_info)
+        name = user_get_name(user_info)
+    except:
+        # yesterday
+        duedate = datetime.datetime.now() - datetime.timedelta(1)
+        name = DEFAULT_USER_NAME
+    now = datetime.datetime.now()
 
-print(str(now))
-print(str(duedate))
+    print(str(now))
+    print(str(duedate))
 
-print(duedate.replace(tzinfo=None) > now.replace(tzinfo=None))
+    door_access = duedate.replace(tzinfo=None) >= now.replace(tzinfo=None)
+    return door_access
+
+check_can_the_user_get_in("0007938944")
