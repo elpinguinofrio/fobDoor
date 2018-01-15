@@ -55,3 +55,6 @@ sudo pip3 install gtts —upgrade
 sudo python3 doorTest.py
 ```
 ## enjoy
+
+## todo
+make project according to http://docs.python-guide.org/en/latest/writing/structure/
