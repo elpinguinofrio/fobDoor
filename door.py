@@ -6,16 +6,32 @@ import json
 import datetime
 from dateutil.parser import parse
 import pygame
-pygame.mixer.init()
+
 from gtts import gTTS
+import RPi.GPIO as GPIO
+
+DOOR_PIN = 3
+
+def init_the_door():
+    GPIO.setmode(GPIO.BOARD) 
+    GPIO.setup(DOOR_PIN, GPIO.OUT) 
+
+def open_the_door():
+    GPIO.output(DOOR_PIN, GPIO.HIGH)
+    time.sleep(1) # wait 1 second to be sure relay has enough time to switch
+    GPIO.output(DOOR_PIN, GPIO.LOW) # External module imports
+
 
 def play_sound(sound_file_name):
+    pygame.mixer.init()
     print("playing " + sound_file_name)
     pygame.mixer.music.load(sound_file_name)
     pygame.mixer.music.set_volume(1.0)
     pygame.mixer.music.play()
     while pygame.mixer.music.get_busy() == True:
         continue
+    pygame.mixer.quit()
+
 
 TEMP_FILE = "/tmp/temp.mp3"
 
@@ -49,8 +65,10 @@ def check_can_the_user_get_in(user_code):
     except:
         # yesterday
         print("can't get server responce")
-        duedate = datetime.datetime.now() - datetime.timedelta(1)
-        name = DEFAULT_USER_NAME
+        #duedate = datetime.datetime.now() - datetime.timedelta(1)
+        #name = DEFAULT_USER_NAME
+        duedate = datetime.datetime.now() + datetime.timedelta(5)
+        name = "Can't connect to server"
     now = datetime.datetime.now()
 
     #print(str(now))
@@ -59,6 +77,7 @@ def check_can_the_user_get_in(user_code):
     door_access = duedate.replace(tzinfo=None) >= now.replace(tzinfo=None)
     if door_access:
         say_text("Access granted, " + name)
+        open_the_door()
     else:
         say_text("Access denied, " + name)
 
@@ -82,7 +101,9 @@ def bytoToBDcode(code):
     return chr(ord('1')+code-30)
 
 if __name__ == "__main__":
+    # init everything
     code = []
+    init_the_door()
     while True:
         buffer = fp.read(1)
         for c in buffer:
