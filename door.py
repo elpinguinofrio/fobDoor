@@ -45,9 +45,27 @@ def say_text(text_to_say, language = "en"):
 
 DEFAULT_USER_NAME = "Fucker"
 
-def get_user_info(user_code):
-    raw_json = urllib.request.urlopen("http://192.168.0.110:8003/state/members/" + str(user_code)).read().decode('utf8')
-    obj = json.loads(raw_json)
+
+def reserve_copy(fob_number):
+    # init reserve copy of db, very damn and temporary
+    with open('db_snapshot.txt') as f:
+        read_data = f.read()
+    f.close()
+
+    users = json.loads(read_data)
+    for user in users:
+        if user['fob'] == fob_number:
+            return user
+    return None
+
+def get_user_info(fob_number):
+    try:
+        raw_json = urllib.request.urlopen("http://192.168.0.110:8003/state/members/" + str(fob_number)).read().decode('utf8')
+        obj = json.loads(raw_json)
+    except:
+        say_text("can't connect to server!")
+        obj = reserve_copy(fob_number)
+    
     return obj
 
 def user_get_duedate(user_info):
@@ -57,38 +75,16 @@ def user_get_name(user_info):
     return user_info['name']
 
 def check_can_the_user_get_in(user_code):
-    try:
-        # try to read date from DB
-        user_info = get_user_info(user_code)
-        duedate = user_get_duedate(user_info)
+    user_info = get_user_info(user_code)
+    if user_info == None:
+        say_text("Access denied, " + "No user found!")
+    else:
         name = user_get_name(user_info)
-    except:
-        # yesterday
-        print("can't get server responce")
-        #duedate = datetime.datetime.now() - datetime.timedelta(1)
-        #name = DEFAULT_USER_NAME
-        duedate = datetime.datetime.now() + datetime.timedelta(5)
-        name = "Can't connect to server"
-    now = datetime.datetime.now()
-
-    #print(str(now))
-    print(str(duedate))
-
-    door_access = duedate.replace(tzinfo=None) >= now.replace(tzinfo=None)
-    if door_access:
+        #duedate = user_get_duedate(user_info)
+        #now = datetime.datetime.now()
+        #door_access = duedate.replace(tzinfo=None) >= now.replace(tzinfo=None)
         say_text("Access granted, " + name)
         open_the_door()
-    else:
-        say_text("Access denied, " + name)
-
-    '''
-    generate_sound_by_text(name)
-    if door_access:
-        play_sound("access_granted.wav")
-    else:
-        play_sound("access_denied2.wav")
-    play_sound(TEMP_FILE)
-    '''
 
 # usb fob reader
 fp = open('/dev/hidraw0', 'rb')
