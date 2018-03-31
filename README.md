@@ -52,8 +52,15 @@ sudo pip3 install gtts —upgrade
 ```
 ## run a python3 code
 ```
-sudo python3 doorTest.py
+sudo python3 door.py
 ```
+## install autoreboot
+```
+sudo chown root:root startup.sh
+sudo chmod ug+x startup.sh
+```
+add line `/home/pi/fobDoor/startup.sh &` to `/etc/rc.local` file
+
 ## enjoy
 
 ## todo

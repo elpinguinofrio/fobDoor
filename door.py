@@ -6,7 +6,8 @@ import json
 import datetime
 from dateutil.parser import parse
 import pygame
-
+import os.path
+import base64
 from gtts import gTTS
 import RPi.GPIO as GPIO
 
@@ -24,7 +25,7 @@ def open_the_door():
 
 def play_sound(sound_file_name):
     pygame.mixer.init()
-    print("playing " + sound_file_name)
+    #print("playing " + sound_file_name)
     pygame.mixer.music.load(sound_file_name)
     pygame.mixer.music.set_volume(1.0)
     pygame.mixer.music.play()
@@ -33,22 +34,26 @@ def play_sound(sound_file_name):
     pygame.mixer.quit()
 
 
-TEMP_FILE = "/tmp/temp.mp3"
-
-def generate_sound_by_text(text_to_say, language = "en"):
-    tts = gTTS(text=text_to_say, lang=language)
-    tts.save(TEMP_FILE)
+def generate_sound_by_text(text_to_say: str, language, sound_file_name):
+    if os.path.exists(sound_file_name) == False:
+        print("new phrase")
+        tts = gTTS(text=text_to_say, lang=language)
+        tts.save(sound_file_name)
+    else:
+        print("reading file from cache")
 
 def say_text(text_to_say, language = "en"):
-    generate_sound_by_text(text_to_say, language)
-    play_sound(TEMP_FILE)
+    # convert text to the uni
+    sound_file_name = "/tmp/" + base64.b64encode(text_to_say.encode()).decode()
+    generate_sound_by_text(text_to_say, language, sound_file_name)
+    play_sound(sound_file_name)
 
 DEFAULT_USER_NAME = "Fucker"
 
 
 def reserve_copy(fob_number):
     # init reserve copy of db, very damn and temporary
-    with open('db_snapshot.txt') as f:
+    with open('/home/pi/fobDoor/db_snapshot.txt') as f:
         read_data = f.read()
     f.close()
 
@@ -83,8 +88,9 @@ def check_can_the_user_get_in(user_code):
         #duedate = user_get_duedate(user_info)
         #now = datetime.datetime.now()
         #door_access = duedate.replace(tzinfo=None) >= now.replace(tzinfo=None)
-        say_text("Access granted, " + name)
         open_the_door()
+        say_text("Access granted, " + name)
+        
 
 # usb fob reader
 fp = open('/dev/hidraw0', 'rb')
@@ -100,6 +106,7 @@ if __name__ == "__main__":
     # init everything
     code = []
     init_the_door()
+    say_text("Hello world!")
     while True:
         buffer = fp.read(1)
         for c in buffer:
